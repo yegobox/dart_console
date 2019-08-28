@@ -40,6 +40,10 @@ class Console {
 
   final _termlib = TermLib();
 
+  // helper function
+  String _truncateString(String text, int length) =>
+      length < text.length ? text.substring(0, length) : text;
+
   /// Enables or disables raw mode.
   ///
   /// There are a series of flags applied to a UNIX-like terminal that together
@@ -516,12 +520,8 @@ class Console {
     String buffer = '';
     var index = 0; // cursor position relative to buffer, not screen
 
-    final screenRow = cursorPosition.row;
-    final screenColOffset = cursorPosition.col;
-
-    // TODO: Add multi-line input. For now, limit the text length to what will
-    // fit on the remainder of the current row.
-    final bufferMaxLength = windowWidth - screenColOffset - 3;
+    final promptRow = cursorPosition.row;
+    final promptCol = cursorPosition.col;
 
     while (true) {
       var key = readKey();
@@ -588,22 +588,29 @@ class Console {
             break;
         }
       } else {
-        if (buffer.length < bufferMaxLength) {
-          if (index == buffer.length) {
-            buffer += key.char;
-            index++;
-          } else {
-            buffer =
-                buffer.substring(0, index) + key.char + buffer.substring(index);
-            index++;
-          }
+        if (index == buffer.length) {
+          buffer += key.char;
+          index++;
+        } else {
+          buffer =
+              buffer.substring(0, index) + key.char + buffer.substring(index);
+          index++;
         }
       }
 
-      cursorPosition = Coordinate(screenRow, screenColOffset);
-      eraseCursorToEnd();
-      write(buffer); // allow for backspace condition
-      cursorPosition = Coordinate(screenRow, screenColOffset + index);
+      final renderString = _truncateString(buffer, windowWidth - promptCol - 1);
+      var padding = ' ' * (windowWidth - renderString.length - promptCol - 2);
+      if (buffer.length > windowWidth - promptCol) {
+        padding += '\$'; // represents line overflow
+      } else {
+        padding += ' ';
+      }
+
+      cursorPosition = Coordinate(promptRow, promptCol);
+      write(renderString + padding);
+
+      // set the cursor where it needs to be for next character
+      cursorPosition = Coordinate(promptRow, promptCol + index);
 
       if (callback != null) callback(buffer, key);
     }
