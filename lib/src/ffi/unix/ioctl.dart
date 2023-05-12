@@ -14,7 +14,7 @@ final TIOCSWINSZ = Platform.isMacOS ? 0x80087467 : 0x5414;
 // 	unsigned short  ws_xpixel;      /* horizontal size, pixels */
 // 	unsigned short  ws_ypixel;      /* vertical size, pixels */
 // };
-class WinSize extends Struct {
+final class WinSize extends Struct {
   @Int16()
   external int ws_row;
 

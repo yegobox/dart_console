@@ -18,7 +18,7 @@ const STDERR_FILENO = 2;
 // 	unsigned short  ws_xpixel;      /* horizontal size, pixels */
 // 	unsigned short  ws_ypixel;      /* vertical size, pixels */
 // };
-class WinSize extends Struct {
+final class WinSize extends Struct {
   @Int16()
   external int ws_row;
 
